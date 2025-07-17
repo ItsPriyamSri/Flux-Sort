@@ -3,42 +3,64 @@
 import json
 from pathlib import Path
 from typing import Dict, List, Optional, Any
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass, asdict, field
 import os
+import uuid
 
 from .file_detector import FileCategory
 
 
 @dataclass
+class TaxonomyCategory:
+    """A user-defined semantic category for AI-powered classification."""
+    id: str
+    name: str
+    description: str
+    color: str = "#3B82F6"
+    icon: str = "📁"
+    folder_name: str = ""
+
+
+@dataclass
 class FluxSortConfig:
     """FluxSort configuration settings."""
-    
+
     # File handling settings
     include_hidden_files: bool = False
     max_scan_depth: Optional[int] = None
     conflicts_strategy: str = "rename"  # rename, skip, overwrite
-    
+
     # Category folder names
     category_folders: Dict[str, str] = None
-    
+
     # File patterns to include/exclude
     include_patterns: List[str] = None
     exclude_patterns: List[str] = None
-    
+
     # Custom file type mappings
     custom_extensions: Dict[str, str] = None
-    
+
     # Safety settings
     require_confirmation: bool = True
     auto_backup: bool = False
     max_file_size_mb: Optional[int] = None
+
+    # AI / Taxonomy
+    taxonomy: List[Any] = None          # List[TaxonomyCategory] — stored as dicts via asdict()
+    gemini_api_key: str = ""
+
+    # Scheduler
+    scheduler_enabled: bool = False
+    scheduler_day: str = "sunday"
+    scheduler_time: str = "09:00"
+    scheduler_watch_paths: List[str] = None
     
     def __post_init__(self):
         """Initialize default values for mutable fields."""
         if self.category_folders is None:
             self.category_folders = {
                 FileCategory.IMAGES.value: "Images",
-                FileCategory.VIDEOS.value: "Videos", 
+                FileCategory.VIDEOS.value: "Videos",
                 FileCategory.DOCUMENTS.value: "Documents",
                 FileCategory.AUDIO.value: "Audio",
                 FileCategory.ARCHIVES.value: "Archives",
@@ -50,17 +72,23 @@ class FluxSortConfig:
                 FileCategory.FONTS.value: "Fonts",
                 FileCategory.MODELS_3D.value: "3D Models",
                 FileCategory.EBOOKS.value: "Ebooks",
-                FileCategory.MISCELLANEOUS.value: "Miscellaneous"
+                FileCategory.MISCELLANEOUS.value: "Miscellaneous",
             }
-        
+
         if self.include_patterns is None:
             self.include_patterns = []
-        
+
         if self.exclude_patterns is None:
             self.exclude_patterns = []
-        
+
         if self.custom_extensions is None:
             self.custom_extensions = {}
+
+        if self.taxonomy is None:
+            self.taxonomy = []
+
+        if self.scheduler_watch_paths is None:
+            self.scheduler_watch_paths = []
 
 
 class ConfigManager:
@@ -110,8 +138,15 @@ class ConfigManager:
             try:
                 with open(self.config_file, 'r', encoding='utf-8') as f:
                     config_data = json.load(f)
-                
-                self._config = FluxSortConfig(**config_data)
+
+                # Deserialise taxonomy dicts back into TaxonomyCategory objects
+                raw_taxonomy = config_data.pop("taxonomy", [])
+                cfg = FluxSortConfig(**config_data)
+                cfg.taxonomy = [
+                    TaxonomyCategory(**t) if isinstance(t, dict) else t
+                    for t in (raw_taxonomy or [])
+                ]
+                self._config = cfg
                 return self._config
             
             except (json.JSONDecodeError, TypeError, ValueError) as e:

@@ -1,0 +1,1 @@
+"""FluxSort FastAPI adapter layer."""

@@ -1,3 +1,95 @@
-/docs
-/src/__pycache__
-/tests/__pycache__
+# ── Python ────────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.pyd
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+*.egg
+.eggs/
+wheels/
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+.env
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Type-checking / linting
+.mypy_cache/
+.dmypy.json
+.ruff_cache/
+.pyright/
+
+# pytest
+.pytest_cache/
+.coverage
+htmlcov/
+
+# ── Node / Frontend ───────────────────────────────────────────────────────────
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+
+# npm / pnpm / yarn
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.pnpm-store/
+
+# ── FluxSort runtime files ────────────────────────────────────────────────────
+# Operation history — lives in the sorted directory, never in the repo
+.fluxsort_history.json
+
+# AI result cache — local machine only
+# (stored at ~/.config/fluxsort/ai_cache.json, but guard just in case)
+ai_cache.json
+
+# ── Secrets ───────────────────────────────────────────────────────────────────
+# Config includes the Gemini API key — never commit it
+# (it lives at ~/.config/fluxsort/fluxsort.json, outside the repo by default,
+#  but block any accidentally placed local copies)
+fluxsort.json
+*.key
+*.pem
+*.p12
+secrets.toml
+.secrets/
+
+# ── IDE / editor ──────────────────────────────────────────────────────────────
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# ── OS ────────────────────────────────────────────────────────────────────────
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+desktop.ini
+
+# ── PyInstaller ───────────────────────────────────────────────────────────────
+*.spec
+# Comment out if you want to commit your spec file:
+# !fluxsort.spec
+
+# ── Docs (generated) ─────────────────────────────────────────────────────────
+docs/_build/
+site/
