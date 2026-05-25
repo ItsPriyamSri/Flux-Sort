@@ -1,3 +1,7 @@
+# ── Markdown docs (only README.md is committed) ───────────────────────────────
+*.md
+!README.md
+
 # ── Python ────────────────────────────────────────────────────────────────────
 __pycache__/
 *.py[cod]

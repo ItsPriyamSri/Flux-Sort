@@ -1,262 +1,239 @@
 # FluxSort 🌊✨
 
-> Transform your cluttered Downloads folder into organized beauty with terminal aesthetics
+> A smart, AI-powered file organizer with a clean web UI — cross-platform, local-first, and privacy-respecting.
 
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Code Style: Black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.111+-green.svg)](https://fastapi.tiangolo.com/)
+[![React](https://img.shields.io/badge/React-18-61DAFB.svg)](https://react.dev/)
 
-FluxSort is a **CLI-first file organization tool** that brings the aesthetic appeal of modern terminal applications to file management. Inspired by tools like `btop`, `lazygit`, and `ranger`, FluxSort makes organizing your digital chaos both functional and visually delightful.
+FluxSort v2 transforms cluttered directories into organized beauty. Unlike dumb extension-only sorters, it learns **your personal folder taxonomy** — define categories like "Work", "Gaming", "College" — and uses **Gemini AI** to map files into them intelligently.
 
-## ✨ Features
+---
 
-### 🚀 Core Functionality
-- **Interactive menu-driven interface** with guided workflow
-- **Lightning-fast file scanning** with beautiful progress indicators
-- **14 intelligent file categories** covering all common file types
-- **Safe immediate-directory scanning** (protects existing organized folders)
-- **Complete preview system** - see exactly what will happen before any changes
-- **Comprehensive undo functionality** with operation history and selective reversal
-- **Cross-platform** support (Windows, macOS, Linux)
+## ✨ What's New in v2
 
-### 🎨 Beautiful Interface
-- **Stunning ASCII banner** with neon terminal aesthetics
-- **Interactive menus** with emoji icons and intuitive navigation
-- **Real-time progress tracking** with animated progress bars
-- **Color-coded file categories** for easy visual identification
-- **Detailed operation summaries** with file counts, sizes, and timing
+| Feature | Description |
+|---|---|
+| **Web UI** | Beautiful dark-mode browser interface at `localhost:8765` |
+| **AI Smart Sort** | Gemini 3.1 Flash Lite classifies files against your custom categories |
+| **Custom Taxonomy** | Define your own folder system with descriptions, icons, and colors |
+| **Human-in-the-loop** | AI proposes, you review and approve — files never move without you |
+| **30-day AI cache** | Same files aren't re-classified on repeat runs |
+| **Full Undo** | Every operation is logged; one-click revert from the History tab |
 
-### 🛡️ Advanced Safety Features
-- **Preview-first workflow** - always see changes before applying
-- **Immediate directory only** - never touches files in subdirectories
-- **Smart conflict resolution** with automatic file renaming
-- **Complete operation logging** for full audit trail
-- **Permission error handling** with graceful fallbacks
-- **Hidden file detection** with optional inclusion
-- **Confirmation prompts** for all destructive operations
+---
+
+## 🏗️ Architecture
+
+```
+Browser (localhost:8765)
+    │  HTTP / WebSocket
+    ▼
+FastAPI server (src/api/)        ← thin adapter, zero business logic
+    │  Python function calls
+    ▼
+Core (src/)                      ← unchanged from v1
+  file_detector.py  →  extension map (fast path, zero API calls)
+  file_scanner.py   →  directory traversal + manifest builder
+  file_sorter.py    →  file moves + collision handling + undo history
+  config.py         →  settings + taxonomy + API key (local only)
+    │
+    ▼
+AI Classifier (src/ai_classifier.py)
+  gemini-3.1-flash-lite  ←  only called for ambiguous/unknown files
+  30-day local cache     ←  ~/.config/fluxsort/ai_cache.json
+```
+
+---
 
 ## 🚀 Quick Start
 
 ### Prerequisites
-- Python 3.10 or higher
-- No external dependencies (uses only Python standard library)
+- Python 3.10+
+- Node.js 18+ (for the web UI)
+- A Gemini API key (optional — AI features degrade gracefully without one)
 
-### Installation
+### Install
+
 ```bash
-# Clone the repository
-git clone https://github.com/yourusername/FluxSort.git
-cd FluxSort
-
-# Make the script executable (optional)
-chmod +x flux_sort.py
+git clone https://github.com/ItsPriyamSri/Flux-Sort.git
+cd Flux-Sort
+pip install -e .
 ```
 
-### Basic Usage
+This installs all Python dependencies and registers two CLI commands:
+- `fluxsort` — the original interactive CLI (unchanged)
+- `fluxsort-serve` — starts the web UI
 
-**FluxSort now features a beautiful interactive interface! Simply run the script and follow the guided prompts.**
+### Build the Frontend (one-time)
 
-1. **Launch FluxSort**:
-   ```bash
-   python /path/to/flux_sort.py
-   ```
-
-2. **Follow the interactive workflow**:
-   - 🏠 **Choose your directory** (current directory or custom path)
-   - 📁 **View directory contents** (files and folders preview)
-   - 🔍 **Automatic scanning** (immediate directory files only)
-   - 🎛️ **Select your action** from the main menu
-
-3. **Main Menu Options**:
-   - **Option 1**: 👁️ **Preview Mode** - See what would be organized (safe preview)
-   - **Option 2**: 🚀 **Organize Files** - Move files for real (with confirmation)
-   - **Option 3**: ↩️ **View & Revert** - Undo any previous operations
-   - **Option 4**: 🔄 **Change Directory** - Switch to a different folder
-   - **Option 5**: ❌ **Exit** - Close FluxSort
-
-4. **Example workflow**:
-   ```bash
-   # Run FluxSort
-   python flux_sort.py
-   
-   # Choose directory (e.g., Downloads)
-   # View file listing and scan results
-   # Select Option 1 to preview organization
-   # Select Option 2 to actually organize files
-   # Optionally use Option 3 to undo if needed
-   ```
-
-## 📊 File Categories
-
-FluxSort intelligently categorizes files into 14 distinct categories:
-
-| Category | Icon | File Types | Examples |
-|----------|------|------------|----------|
-| **Images** | 🖼️ | JPG, PNG, GIF, SVG, WebP, RAW | photos, screenshots, graphics |
-| **Videos** | 🎬 | MP4, AVI, MKV, MOV, WebM | movies, tutorials, recordings |
-| **Documents** | 📄 | PDF, DOC, TXT, MD, XLS | reports, notes, spreadsheets |
-| **Audio** | 🎵 | MP3, WAV, FLAC, AAC | music, podcasts, recordings |
-| **Archives** | 📦 | ZIP, RAR, 7Z, TAR | compressed files, backups |
-| **Code** | 💻 | PY, JS, CPP, HTML | source code, scripts |
-| **System** | ⚙️ | EXE, ISO, DMG | executables, disk images |
-| **Mobile** | 📱 | APK, IPA | mobile applications |
-| **Web** | 🌐 | HTML, CSS | web development files |
-| **Data** | 📊 | JSON, XML, CSV | data and configuration files |
-| **Fonts** | 🔤 | TTF, OTF, WOFF | typography files |
-| **3D Models** | 🎮 | OBJ, FBX, STL | 3D modeling files |
-| **Ebooks** | 📚 | EPUB, MOBI | digital books |
-| **Miscellaneous** | ❓ | * | unrecognized file types |
-
-## 📁 Output Structure
-
-After running FluxSort, your directory will be beautifully organized:
-
-```
-Downloads/
-├── Images/
-│   ├── vacation_photo.jpg
-│   ├── screenshot.png
-│   └── diagram.svg
-├── Videos/
-│   ├── tutorial.mp4
-│   └── meeting_recording.mov
-├── Documents/
-│   ├── important_report.pdf
-│   ├── meeting_notes.txt
-│   └── budget_spreadsheet.xlsx
-├── Audio/
-│   ├── favorite_podcast.mp3
-│   └── music_collection.flac
-├── Archives/
-│   ├── project_backup.zip
-│   └── source_code.tar.gz
-├── Code/
-│   ├── automation_script.py
-│   └── website_template.html
-└── Miscellaneous/
-    └── unknown_file.xyz
-```
-
-## 🛠️ How to Use FluxSort
-
-### Interactive Mode (Recommended)
 ```bash
-python flux_sort.py
+cd frontend
+npm install
+npm run build
+cd ..
 ```
-FluxSort will launch with a beautiful interactive interface that guides you through:
-- **Path selection** (current directory or custom path)
-- **Directory preview** (see files and folders before scanning)
-- **File scanning** (immediate directory only, protects subdirectories)
-- **Menu options** (preview, organize, undo, or change directory)
 
-### Legacy Command Line Options
-For backwards compatibility, you can still use command line arguments:
+### Run
+
+**Option A — Production (single command)**
 ```bash
-python flux_sort.py [OPTIONS]
-
-Options:
-  -d, --directory PATH    Directory to organize (default: current directory)
-  --dry-run              Preview changes without moving files (default: True)
-  --no-dry-run           Actually move files instead of just previewing
-  -v, --verbose          Show detailed progress and information
-  --help                 Show this message and exit
+fluxsort-serve
+# → Opens http://localhost:8765 in your browser automatically
 ```
 
-**⚠️ Note**: The interactive mode is much safer and more user-friendly than command line options!
+**Option B — Dev mode (hot-reload frontend)**
+```bash
+# Terminal 1
+python -m uvicorn src.api.server:app --port 8765
 
-## 🔧 Advanced Usage
+# Terminal 2
+cd frontend && npm run dev
+# → Open http://localhost:5173
+```
 
-### Configuration
-FluxSort automatically creates configuration files in your system's config directory:
-- **Windows**: `%APPDATA%\fluxsort\fluxsort.json`
-- **macOS**: `~/Library/Application Support/fluxsort/fluxsort.json`
-- **Linux**: `~/.config/fluxsort/fluxsort.json`
+**Option C — Legacy CLI (no UI needed)**
+```bash
+fluxsort
+```
 
-### Safety Features
-- **Always use dry-run first**: Never skip the preview step
-- **Conflict resolution**: Files with same names are automatically renamed
-- **Operation history**: All moves are logged for potential undo operations
-- **Error handling**: Graceful handling of permission issues and file locks
+---
 
-## 🗺️ Project Roadmap
+## 🧭 Web UI Walkthrough
 
-FluxSort follows a phased development approach:
+### 1. Scan & Sort
+Choose a directory (quick-select Downloads, Desktop, or type a custom path).  
+Hit **⚡ Scan** — watch the live progress bar fill as files are discovered.  
+Then choose your sort mode:
+- **👁️ Preview & Sort** — standard extension-based categories
+- **🤖 AI Smart Sort** — uses your custom taxonomy + Gemini
 
-### ✅ Phase 1: Basic Sorting Script (Completed)
-- Core file detection and categorization
-- Safe immediate-directory scanning
-- Comprehensive safety features
-- Operation history and logging
+### 2. Preview
+Review the sort plan before anything is moved.  
+Each file is shown in its target category column.  
+AI-classified files show a confidence badge (green ✓ / amber ⚠).  
+**Reassign any file** by changing its category in the dropdown.  
+Click **✓ Execute Sort** when you're happy — a confirmation step protects you.
 
-### ✅ Phase 1.5: Interactive Interface (Completed)
-- **Beautiful menu-driven interface** with ASCII banner
-- **Guided workflow** with path selection and directory preview
-- **Complete preview system** showing exactly what will be organized
-- **Real-time progress tracking** with animated progress bars
-- **Comprehensive undo system** with operation history
-- **Smart safety features** protecting existing organized folders
+### 3. History
+Every sort operation is logged with a full file list.  
+Click **↩ Undo** on any past operation to move all its files back instantly.
 
-### 🔄 Phase 2: Enhanced CLI Interface (Next)
-- Rich terminal output with colors and animations
-- Command-line interface with Typer framework
-- Advanced configuration management
-- Watch mode for automatic directory monitoring
+### 4. My Categories
+Define your personal folder taxonomy for AI Smart Sort:
+- Give each category a name, description, color, and icon
+- The description is what the AI reads to make decisions — be specific
+- Example: `Work` → *"PDFs from college, project proposals, meeting notes, invoices, spreadsheets"*
 
-### 📅 Phase 3: TUI Interface (Future)
-- Interactive terminal UI with Textual
-- Arrow key navigation and file browser
-- Real-time preview of operations
-- Advanced rule customization interface
+### 5. Settings
+- Paste your **Gemini API key** (stored locally at `~/.config/fluxsort/fluxsort.json`, never transmitted except to Google's API directly)
+- Configure the **weekly scheduler** (day + time)
+- Set your **conflict resolution strategy** (rename / skip / overwrite)
 
-### 🌟 Phase 4: GUI Interface (Future)
-- Desktop application for broader adoption
-- Drag-and-drop functionality
-- System tray integration
-- Visual file previews and thumbnails
+---
 
-## 🧪 Development
+## 📊 File Categories (Extension-Map Mode)
 
-### Running Tests
+| Category | Examples |
+|---|---|
+| 🖼️ Images | jpg, png, svg, heic, raw, webp |
+| 🎬 Videos | mp4, mkv, mov, avi, webm |
+| 📄 Documents | pdf, docx, txt, md, xlsx, pptx |
+| 🎵 Audio | mp3, flac, wav, aac, ogg |
+| 📦 Archives | zip, rar, 7z, tar.gz |
+| 💻 Code | py, js, ts, go, rs, cpp, sh |
+| ⚙️ System | exe, iso, dmg, deb, appimage |
+| 📱 Mobile | apk, ipa, aab |
+| 🌐 Web | html, css, scss |
+| 📊 Data | json, yaml, sql, db, csv |
+| 🔤 Fonts | ttf, otf, woff2 |
+| 🎮 3D Models | obj, fbx, stl, blend |
+| 📚 Ebooks | epub, mobi, azw3 |
+| ❓ Miscellaneous | everything else |
+
+---
+
+## 🔑 Gemini API Key
+
+1. Get a free key at [aistudio.google.com/app/apikey](https://aistudio.google.com/app/apikey)
+2. Open FluxSort → **Settings** → paste key → **Save Settings**
+3. Your key is stored at `~/.config/fluxsort/fluxsort.json` — never committed, never sent anywhere except Google's API
+
+> Without a key, FluxSort falls back to extension-map sorting silently. All other features work normally.
+
+---
+
+## 🛡️ Safety Guarantees
+
+- **No file moves without approval** — the Preview screen is always shown first
+- **Immediate-directory only** — never touches files inside sub-folders
+- **Full undo** — every move is logged to `.fluxsort_history.json` in the sorted directory
+- **Conflict handling** — duplicate filenames are auto-renamed (`file (1).txt`) by default
+- **AI cache** — 30-day local cache means the same files aren't re-sent to Gemini on repeat runs
+
+---
+
+## 🗂️ Project Structure
+
+```
+Flux-Sort/
+├── src/                        # Core Python modules
+│   ├── file_detector.py        # Extension-map classifier (14 categories)
+│   ├── file_scanner.py         # Directory traversal + ScanResult
+│   ├── file_sorter.py          # File moves + undo history (.fluxsort_history.json)
+│   ├── config.py               # Config + TaxonomyCategory dataclass
+│   ├── ai_classifier.py        # Gemini 3.1 Flash Lite + local cache
+│   └── api/                    # FastAPI adapter layer
+│       ├── server.py           # App + CORS + static file serving
+│       ├── models.py           # Pydantic v2 request/response models
+│       └── routes/             # scan, sort, history, taxonomy, settings, ai, browse
+├── frontend/                   # React 18 + Vite 5
+│   ├── src/
+│   │   ├── views/              # ScanView, PreviewView, SetupView, HistoryView, SettingsView
+│   │   ├── components/Layout/  # Sidebar, TopBar
+│   │   └── api/client.js       # All fetch + WebSocket calls
+│   └── dist/                   # Production build (gitignored, run npm run build)
+├── tests/
+│   └── test_file_detector.py   # Existing unit tests (still pass)
+├── flux_sort.py                # Legacy interactive CLI (unchanged)
+├── fluxsort_serve.py           # Web UI entry point
+└── pyproject.toml              # Package config + entry points
+```
+
+---
+
+## 🗺️ Roadmap
+
+### ✅ Phase 1 — CLI (Complete)
+Extension-map sorting, preview, undo, cross-platform CLI
+
+### ✅ Phase 2 — Web UI + AI (Complete)
+FastAPI backend, React frontend, Gemini AI classifier, custom taxonomy, weekly scheduler config
+
+### 🔄 Phase 3 — Scheduler (Next)
+Background scheduler that auto-scans watched folders weekly and queues files for review without moving them
+
+### 📅 Phase 4 — Packaging
+PyInstaller single-binary for Windows / macOS / Linux (no Python required)
+
+### 🌟 Phase 5 — Tauri Native App
+Wrap the React frontend in a Tauri shell for a proper native desktop experience (~5 MB binary, system tray, OS notifications)
+
+---
+
+## 🧪 Tests
+
 ```bash
 python -m pytest tests/ -v
 ```
 
-### Project Structure
-```
-FluxSort/
-├── src/                    # Core library modules
-│   ├── file_detector.py    # File type detection and categorization
-│   ├── file_scanner.py     # Directory scanning and analysis
-│   ├── file_sorter.py      # File moving operations with safety
-│   └── config.py           # Configuration management
-├── tests/                  # Test suite
-├── examples/               # Usage examples and documentation
-├── docs/                   # Project documentation
-└── flux_sort.py           # Main executable script
-```
-
-## 🤝 Contributing
-
-FluxSort is open-source and welcomes contributions! Whether you're interested in:
-- 🐛 Bug fixes and improvements
-- ✨ New features and enhancements
-- 📚 Documentation and examples
-- 🎨 UI/UX improvements
-
-Please feel free to open issues and submit pull requests.
+---
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🙏 Acknowledgments
-
-FluxSort draws inspiration from the beautiful terminal aesthetics of:
-- **btop** - Resource monitor with amazing visuals
-- **lazygit** - Terminal UI for git commands
-- **ranger** - Vim-inspired file manager
+MIT — see [LICENSE](LICENSE)
 
 ---
 
-**Made with ❤️ for developers and power users who appreciate beautiful terminal interfaces**
-
-> *"Transform chaos into organized beauty, one file at a time"* ✨
+*"FluxSort learns how **you** think about your files — not how a generic algorithm does."* 🌊
